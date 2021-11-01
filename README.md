@@ -10,4 +10,4 @@ The analysis was performed in the cloud using Google Colab. Since the storage of
 File descriptions:
 - 20211030_ChIPseq_Rinf_Meelad.ipynb: Jupyter notebook used for data analysis on Google Colab.
 - analysis.Rmd: R markdown file used for data analysis in RStudio on the local machine.
-- analysis.html: Knitted report from the R markdown file
+- analysis.html: Knitted report from the R markdown file. Since github is not rendering HTML files nicely at this time, please use the following link to view it: https://htmlpreview.github.io/?https://github.com/oliverartz/ChIP_Rinf_Dawlaty/blob/main/analysis.html
