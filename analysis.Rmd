@@ -1,0 +1,103 @@
+---
+title: "Rinf_ChIP_analysis"
+output: html_document
+---
+#Load libraries
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rtracklayer)
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(ChIPpeakAnno)
+library(ChIPseeker)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(Gviz)
+library(Rsamtools)
+```
+#Import Data
+```{r, message=FALSE, warning=FALSE}
+### ChIP seq peak files ###
+WT_merge_peaks_df <- read_table2("MACS2_peaks/WT_merge_filtered/WT_merge_peaks.xls", skip = 29)
+
+### gene annotations for mm10 ###
+gene_annotations <- TxDb.Mmusculus.UCSC.mm10.knownGene
+```
+
+#Peak Annotation in promoters
+```{r}
+peak <- makeGRangesFromDataFrame(WT_merge_peaks_df)
+
+promoter <- getPromoters(TxDb=gene_annotations, upstream=3000, downstream=3000)
+tagMatrix <- getTagMatrix(peak, windows=promoter)
+```
+
+#Make heatmap
+```{r}
+tagHeatmap(tagMatrix, xlim=c(-3000, 3000), color="red")
+```
+
+#Make Average binding profile (TSS)
+```{r}
+plotAvgProf(tagMatrix, 
+            xlim=c(-3000, 3000), 
+            xlab="Genomic Region (5'->3')", 
+            ylab = "Read Count Frequency")
+```
+
+#Peak annotation
+```{r, message=FALSE, warning=FALSE}
+WT_merge_peaks_anno <- annotatePeak(peak, tssRegion=c(-3000, 3000), TxDb=gene_annotations, annoDb="org.Mm.eg.db")
+
+plotAnnoPie(WT_merge_peaks_anno)
+```
+
+#GO term enrichment
+```{r}
+geneId <- WT_merge_peaks_anno@anno$geneId
+
+go_enrichment <- enrichGO(gene = geneId, 
+                    keyType = "ENTREZID", 
+                    OrgDb = org.Mm.eg.db, 
+                    ont = "BP", 
+                    pAdjustMethod = "BH", 
+                    qvalueCutoff = 0.05, 
+                    readable = TRUE)
+
+dotplot(go_enrichment, showCategory=10)
+```
+
+#Peak visualization
+```{r}
+coverage_track <- DataTrack(range = "aligned_reads/IP_WT_filt_merge_sorted.bedGraph", 
+                            genome = "mm10", 
+                            type = "l", 
+                            name = "Coverage", 
+                            window=10500, 
+                            chromosome = "chr6",
+                            from=122630000, to=122900000,
+                            col.mountain="grey")
+
+
+ideogram <- IdeogramTrack("chr6", "mm10")
+axis <- GenomeAxisTrack()
+peak_track = AnnotationTrack(peak, 
+                               genome="mm10", name='ChIP peaks',
+                               chromosome='chr6',
+                               shape='box',fill='blue3',size=2)
+tx <- GeneRegionTrack(gene_annotations, chromosome="chr6",
+                      start=122630000, end=122900000, name="Gene models")
+plotTracks(list(ideogram, 
+                peak_track, 
+                coverage_track, 
+                tx, 
+                axis), 
+           from=122630000, to=122900000,
+           transcriptAnnotation="gene",
+           collapseTranscripts = TRUE,
+           shape = "arrow",
+           window="auto", 
+           type="histogram", 
+           cex.title=0.7, 
+           fontsize=10)
+```
+
