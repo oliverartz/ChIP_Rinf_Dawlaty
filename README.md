@@ -7,6 +7,7 @@ I tried to stick to the analysis performed in the publication as much as I could
 
 The analysis was performed in the cloud using Google Colab. Since the storage of the used instance was too low for the dataset, I mounted my Google Drive to accomodate for the lack in storage capacity. Most analyses after peak calling were performed on a local machine using R (in R Studio).
 
-Files in this repo:
-- 20211030_ChIPseq_Rinf_Meelad.ipynb: This is the Jupyter notebook used for data analysis on Google Colab.
-- 
+File descriptions:
+- 20211030_ChIPseq_Rinf_Meelad.ipynb: Jupyter notebook used for data analysis on Google Colab.
+- analysis.Rmd: R markdown file used for data analysis in RStudio on the local machine.
+- analysis.html: Knitted report from the R markdown file
